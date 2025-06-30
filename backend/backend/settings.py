@@ -32,7 +32,10 @@ SECRET_KEY = 'django-insecure-ez1=_c5mx2%=b)amxb^_76u=o!k2pk%bd-(c7du@k2ei@z%^g0
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+#add by me
 ALLOWED_HOSTS = ["*"]
+AUTH_USER_MODEL = 'api.CustomUser'
+
 
 REST_FRAMEWORK = {
 "DEFAULT_AUTHENTICATION_CLASSES":(
@@ -66,6 +69,7 @@ INSTALLED_APPS = [
     "api",
     "rest_framework",
     "corsheaders"
+    "tutors",
 ]
 
 MIDDLEWARE = [
@@ -102,13 +106,23 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'learnenglishdb',
+        'USER': 'postgres',
+        'PASSWORD': 'postgres',
+        'HOST': '103.75.196.105',
+        'PORT': '5432'
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
