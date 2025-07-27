@@ -21,8 +21,13 @@ class CourseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Course
-        fields = ['id', 'title', 'description', 'price_per_hour', 'language', 'level', 'schedule_day', 
-                  'schedule_start', 'schedule_end', 'capacity', 'lessons', 'tutor']
+        fields = [
+            'id', 'courseId', 'title', 'description', 'price_per_hour',
+            'price_per_dollar', 'price_per_toman', 'language', 'level',
+            'schedule_day', 'schedule_start', 'schedule_end', 'capacity',
+            'active_students', 'length', 'detail', 'requirements', 'materials',
+            'lessons', 'tutor'
+        ]
 
 # Serializer for Student
 class StudentSerializer(serializers.ModelSerializer):
