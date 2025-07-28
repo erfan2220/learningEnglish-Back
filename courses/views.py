@@ -1,13 +1,13 @@
 from rest_framework import viewsets
 from .models import Course, Tutor, Student, Lesson, Homework, Review
 from .serializers import CourseSerializer, TutorSerializer, StudentSerializer, LessonSerializer, HomeworkSerializer, ReviewSerializer
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated,AllowAny
 
 # View for Course
 class CourseViewSet(viewsets.ModelViewSet):
     queryset = Course.objects.all()
     serializer_class = CourseSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
 # View for Tutor
 class TutorViewSet(viewsets.ModelViewSet):
