@@ -6,24 +6,33 @@ from accounts.models import User  # Add the import for User model
 class Course(models.Model):
     tutor = models.ForeignKey(Tutor, related_name='tutored_courses', on_delete=models.CASCADE)
     title = models.CharField(max_length=255)
-    courseId = models.DecimalField(default='10',max_digits=10, decimal_places=2) # Added courseId field
+    courseId = models.CharField(default='cr1001', max_length=20, unique=True)
     description = models.TextField(default='Default course description')
-    price_per_hour = models.DecimalField(default='10',max_digits=10, decimal_places=2)
-    price_per_dollar = models.DecimalField(default='12',max_digits=10, decimal_places=2)  # Added price_per_dollar field
-    price_per_toman = models.DecimalField(default='960',max_digits=10, decimal_places=2)  # Added price_per_toman field
+    detail = models.TextField(default='Default course detail')
+    requirements = models.TextField(default='Default course req')
+    materials = models.TextField(default='Default course mat')
+
+
+    price_per_hour = models.DecimalField(default=10, max_digits=10, decimal_places=2)
+    price_per_dollar = models.DecimalField(default=12, max_digits=10, decimal_places=2)
+    price_per_toman = models.DecimalField(default=960, max_digits=10, decimal_places=2)
+
+
     language = models.CharField(max_length=50)
     level = models.CharField(max_length=50)
     schedule_day = models.CharField(max_length=50)
     schedule_start = models.TimeField()
     schedule_end = models.TimeField()
-    capacity = models.IntegerField()
 
-    # New fields
-    active_students = models.IntegerField(default=0)  # Added active_students field
-    length = models.CharField(default='80',max_length=100)  # Added length field
-    detail = models.TextField(default='Default course detail')  # Added detail field
-    requirements = models.TextField(default='Default course req')  # Added requirements field
-    materials = models.TextField(default='Default course mat')  # Added materials field
+
+    capacity = models.IntegerField()
+    active_students = models.IntegerField(default=0)
+    length = models.IntegerField(default=20)
+    course_duration = models.IntegerField(default=60)
+
+
+    image = models.ImageField(upload_to='course_images/', null=True, blank=True)
+    language_flag = models.ImageField(upload_to='flags/', null=True, blank=True)
 
     def __str__(self):
         return self.title
