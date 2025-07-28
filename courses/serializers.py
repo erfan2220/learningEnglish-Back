@@ -26,7 +26,7 @@ class CourseSerializer(serializers.ModelSerializer):
             'price_per_dollar', 'price_per_toman', 'language', 'level',
             'schedule_day', 'schedule_start', 'schedule_end', 'capacity',
             'active_students', 'length', 'detail', 'requirements', 'materials',
-            'lessons', 'tutor'
+            'lessons', 'tutor','image','language_flag'
         ]
 
 # Serializer for Student
