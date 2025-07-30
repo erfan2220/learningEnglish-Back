@@ -9,7 +9,7 @@ class Student(models.Model):
     courses_list = models.ManyToManyField(Course, related_name='students_list')  # Changed related_name
     favorite_tutors = models.ManyToManyField(Tutor, related_name="favorite_students_students")  # Unique related_name here
     student_active = models.BooleanField(default=True)
-    student_homework_completed = models.JSONField()
+    student_homework_completed = models.JSONField(default=list)
 
     def __str__(self):
         return self.user.first_name
