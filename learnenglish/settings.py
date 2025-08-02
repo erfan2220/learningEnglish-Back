@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt.token_blacklist',
     'rest_framework_simplejwt',
+    'corsheaders',
     'accounts',
     'courses',
     'students',
@@ -65,6 +66,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = 'learnenglish.urls'
@@ -75,7 +77,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'learnenglishdb',    # Your database name
-        'USER': 'postgres',          # Your PostgreSQL username
+        'USER': 'postgres',          # Your Postgre SQL username
         'PASSWORD': 'postgres',      # Your PostgreSQL password
         'HOST': '103.75.196.105',    # Your database server address
         'PORT': '5432',              # Default PostgreSQL port
