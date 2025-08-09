@@ -76,13 +76,15 @@ AUTH_USER_MODEL = 'accounts.User'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'learnenglishdb',    # Your database name
-        'USER': 'postgres',          # Your Postgre SQL username
-        'PASSWORD': 'postgres',      # Your PostgreSQL password
-        'HOST': '103.75.196.105',    # Your database server address
-        'PORT': '5432',              # Default PostgreSQL port
+        'NAME': 'learnenglishdb',
+        'USER': 'postgres',
+        'PASSWORD': 'postgres',
+        'HOST': '103.75.196.105',
+        'PORT': '5432',
     }
 }
+
+
 
 TEMPLATES = [
     {
@@ -106,12 +108,12 @@ WSGI_APPLICATION = 'learnenglish.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(hours=1),  # Access token will expire after 1 hour
