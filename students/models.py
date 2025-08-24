@@ -7,7 +7,7 @@ from tutors.models import Tutor
 class Student(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='student_profile')  # Changed related_name
     courses_list = models.ManyToManyField(Course, related_name='students_list')  # Changed related_name
-    favorite_tutors = models.ManyToManyField(Tutor, related_name="favorite_students_students")  # Unique related_name here
+    favourite_tutors = models.ManyToManyField(Tutor, related_name="favorite_students_students")  # Updated field name
     student_active = models.BooleanField(default=True)
     student_homework_completed = models.JSONField(default=list)
 

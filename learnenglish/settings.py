@@ -43,6 +43,9 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt.token_blacklist',
     'rest_framework_simplejwt',
     'corsheaders',
+    'django_extensions',
+    'drf_spectacular',
+    'django_filters',
     'accounts',
     'courses',
     'students',
@@ -56,6 +59,8 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ],
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
 }
 
 MIDDLEWARE = [
@@ -76,7 +81,7 @@ AUTH_USER_MODEL = 'accounts.User'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'learnenglishdb',
+        'NAME': 'learnenglish',
         'USER': 'postgres',
         'PASSWORD': 'postgres',
         'HOST': '103.75.196.105',
