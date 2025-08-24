@@ -12,3 +12,9 @@ class StudentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Student
         fields = ['id', 'user', 'courses_list', 'favourite_tutors', 'student_active', 'student_homework_completed']
+
+    def validate(self, data):
+        # Optional: Add custom validation if needed for nullable fields
+        if 'messages_received' in data and not data['messages_received']:
+            data['messages_received'] = None
+        return data

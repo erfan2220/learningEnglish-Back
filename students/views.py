@@ -7,6 +7,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from courses.models import Course
 
+
 class StudentViewSet(viewsets.ModelViewSet):
     queryset = Student.objects.all()
     serializer_class = StudentSerializer
@@ -20,14 +21,18 @@ class StudentViewSet(viewsets.ModelViewSet):
             return Response({'error': 'Course ID is required'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            # Fetch the course by the primary key directly if you can
             course = Course.objects.get(pk=course_id)
+
+            # Check if the course is already added
+            if student.courses_list.filter(id=course.id).exists():
+                return Response({'error': 'Course already added to student'}, status=status.HTTP_400_BAD_REQUEST)
+
             student.courses_list.add(course)
-            student.save()  # Saving the student instance after modification
+            student.save()  # Save the student instance after adding the course
+
             return Response({
                 'status': 'course added',
                 'courses_list': CourseSerializer(student.courses_list.all(), many=True).data
-                # Returning updated courses
             }, status=status.HTTP_200_OK)
         except Course.DoesNotExist:
             return Response({'error': 'Course not found'}, status=status.HTTP_404_NOT_FOUND)
