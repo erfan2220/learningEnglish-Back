@@ -25,9 +25,20 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-dkfc^7t0h+pwtj9zlpen#zhwdlu)0!0g3n7pa4@e#9p6y_%(h='
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
+
+# CORS: very open for local dev
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True  # ok even if you don't rely on cookies
+
+# CSRF is not used with JWT header auth, but keep this to silence strict checks:
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost", "http://localhost:3000",
+    "http://127.0.0.1", "http://127.0.0.1:3000",
+    "http://localhost:5173", "http://127.0.0.1:5173",
+]
 
 
 # Application definition
@@ -42,7 +53,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt.token_blacklist',
     'rest_framework_simplejwt',
-    'corsheaders',
+     'corsheaders',
     'django_extensions',
     'drf_spectacular',
     'django_filters',
@@ -54,6 +65,7 @@ INSTALLED_APPS = [
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
+        'accounts.auth.CookieJWTAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
@@ -65,13 +77,16 @@ REST_FRAMEWORK = {
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    "whitenoise.middleware.WhiteNoiseMiddleware",  # add directly after SecurityMiddleware
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
+
+
 ]
 
 ROOT_URLCONF = 'learnenglish.urls'
@@ -84,7 +99,8 @@ DATABASES = {
         'NAME': 'learnenglish',
         'USER': 'postgres',
         'PASSWORD': 'postgres',
-        'HOST': '103.75.196.105',
+         'HOST': '103.75.196.105',
+        #'HOST': '127.0.0.1',
         'PORT': '5432',
     }
 }
@@ -147,6 +163,19 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
+SPECTACULAR_SETTINGS = {
+    "TITLE": "LearnEnglish API",
+    "DESCRIPTION": "OpenAPI schema for LearnEnglish",
+    "VERSION": "1.0.0",
+    # If needed, temporarily relax/disable deep operations while debugging:
+    # "COMPONENT_SPLIT_REQUEST": True,
+    # "POSTPROCESSING_HOOKS": [],
+    # You can also exclude problematic endpoints while you debug:
+    # "EXCLUDE_PATHS": [r"^/some/broken/path/"],
+}
+
+
+
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
@@ -162,8 +191,10 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 
+
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
@@ -173,4 +204,8 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-CORS_ALLOW_ALL_ORIGINS = True
+
+
+
+# optional (nice to have)
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"

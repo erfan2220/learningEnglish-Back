@@ -9,7 +9,7 @@ class TutorCertificateInline(admin.StackedInline):
 class TutorEducationInline(admin.StackedInline):
     model = TutorEducation
     extra = 0
-
+#/admin.py
 class TutorExperienceInline(admin.StackedInline):
     model = TutorExperience
     extra = 0

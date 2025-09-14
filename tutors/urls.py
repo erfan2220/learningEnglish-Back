@@ -2,14 +2,15 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from .views import (
-    # TutorViewSet,
+     TutorViewSet,
     TutorCertificateViewSet,
     TutorEducationViewSet,
     TutorExperienceViewSet,
-    TutorCourseViewSet
+    TutorCourseViewSet,
 )
 
 router = DefaultRouter()
+router.register("tutors", TutorViewSet, basename="tutors")
 router.register(r'tutor-courses', TutorCourseViewSet)
 # router.register("tutors", TutorViewSet, basename="tutors")
 router.register("tutor-certificates", TutorCertificateViewSet, basename="tutor-certificates")

@@ -9,6 +9,8 @@ from .serializers import (
     TutorExperienceSerializer,
 )
 
+
+
 class ReadOnlyOrAuth(permissions.BasePermission):
     def has_permission(self, request, view):
         # allow anyone to GET/HEAD/OPTIONS; require auth for POST/PUT/PATCH/DELETE
@@ -16,12 +18,15 @@ class ReadOnlyOrAuth(permissions.BasePermission):
             return True
         return request.user and request.user.is_authenticated
 
-# class TutorViewSet(viewsets.ModelViewSet):
-#     queryset = Tutor.objects.select_related("user").prefetch_related(
-#         "certificates", "educations", "experiences"
-#     )
-#     serializer_class = TutorSerializer
-#     permission_classes = [ReadOnlyOrAuth]
+
+
+
+class TutorViewSet(viewsets.ModelViewSet):
+    queryset = Tutor.objects.select_related("user").prefetch_related(
+        "certificates", "educations", "experiences","courses"
+    )
+    serializer_class = TutorSerializer
+    permission_classes = [ReadOnlyOrAuth]
 
 class TutorCourseViewSet(viewsets.ModelViewSet):
     queryset = TutorCourse.objects.all()

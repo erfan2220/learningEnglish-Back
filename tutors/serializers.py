@@ -33,6 +33,7 @@ class TutorSerializer(serializers.ModelSerializer):
     certificates = TutorCertificateSerializer(many=True, read_only=True)
     educations = TutorEducationSerializer(many=True, read_only=True)
     experiences = TutorExperienceSerializer(many=True, read_only=True)
+    courses=TutorCourseSerializer(many=True, read_only=True)
 
     class Meta:
         model = Tutor
@@ -40,5 +41,5 @@ class TutorSerializer(serializers.ModelSerializer):
             "id", "user", "profile_picture", "languages_spoken",
             "country", "subjects", "phone_number", "bio",
             "intro_video_url", "intro_video_file",
-            "certificates", "educations", "experiences",
+            "certificates", "educations", "experiences","courses"
         ]
