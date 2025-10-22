@@ -14,6 +14,7 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+#learnenglish/urls.py
 from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
@@ -37,6 +38,7 @@ urlpatterns = [
     path('', include('courses.urls')),  # Make sure the courses URLs are included
     path('', include('tutors.urls')),  # Make sure the courses URLs are included
     path('', include('students.urls')),  # Make sure the courses URLs are included
+    path('api/', include('blog.urls')),  # Include blog API URLs
 ]
 
 

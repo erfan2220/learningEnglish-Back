@@ -1,6 +1,6 @@
 # tutors/admin.py
 from django.contrib import admin
-from .models import Tutor, TutorCertificate, TutorEducation, TutorExperience
+from .models import Tutor, TutorCertificate, TutorEducation, TutorExperience,TutorCourse
 
 class TutorCertificateInline(admin.StackedInline):
     model = TutorCertificate
@@ -14,6 +14,11 @@ class TutorExperienceInline(admin.StackedInline):
     model = TutorExperience
     extra = 0
 
+
+class TutorCourseInline(admin.TabularInline):
+    model = TutorCourse
+    extra = 0
+
 @admin.register(Tutor)
 class TutorAdmin(admin.ModelAdmin):
     list_display = ("id", "user", "country", "phone_number")
@@ -23,3 +28,4 @@ class TutorAdmin(admin.ModelAdmin):
 admin.site.register(TutorCertificate)
 admin.site.register(TutorEducation)
 admin.site.register(TutorExperience)
+admin.site.register(TutorCourse)
