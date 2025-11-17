@@ -76,21 +76,56 @@ class TutorCourseSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 class TutorSerializer(serializers.ModelSerializer):
+    # READ: nested
     user = UserMiniSerializer(read_only=True)
     certificates = TutorCertificateSerializer(many=True, read_only=True)
     educations = TutorEducationSerializer(many=True, read_only=True)
     experiences = TutorExperienceSerializer(many=True, read_only=True)
     courses = TutorCourseSerializer(many=True, read_only=True)
 
+    # WRITE: flat fields to edit user name/email along with tutor
+    user_email = serializers.EmailField(write_only=True, required=False)
+    user_first_name = serializers.CharField(write_only=True, required=False, allow_blank=True)
+    user_last_name  = serializers.CharField(write_only=True, required=False, allow_blank=True)
+
     class Meta:
         model = Tutor
         fields = [
-            "id", "user", "profile_picture", "languages_spoken",
+            "id",
+            "user",                   # read-only nested user (id, email, names)
+            "user_email", "user_first_name", "user_last_name",  # write-only fields
+            "profile_picture", "languages_spoken",
             "country", "subjects", "phone_number",
             "bio", "teaching_style", "expectation", "description",
             "intro_video_url", "intro_video_file",
             "certificates", "educations", "experiences", "courses",
         ]
+
+    def update(self, instance, validated_data):
+        # Pull user props if present
+        u_email = validated_data.pop("user_email", None)
+        u_fn    = validated_data.pop("user_first_name", None)
+        u_ln    = validated_data.pop("user_last_name", None)
+
+        # Update Tutor fields (normal)
+        for attr, val in validated_data.items():
+            setattr(instance, attr, val)
+        instance.save()
+
+        # Update related User fields
+        user = instance.user
+        changed = False
+        if u_email is not None and u_email != user.email:
+            user.email = u_email; changed = True
+        if u_fn is not None and u_fn != user.first_name:
+            user.first_name = u_fn; changed = True
+        if u_ln is not None and u_ln != user.last_name:
+            user.last_name = u_ln; changed = True
+        if changed:
+            user.save(update_fields=["email", "first_name", "last_name"])
+
+        return instance
+
 
 # --- input serializer for the one-shot create endpoint ---
 class LanguageLevelSerializer(serializers.Serializer):

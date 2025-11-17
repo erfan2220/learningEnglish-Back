@@ -1,6 +1,9 @@
+#course/models
 from django.db import models
 from tutors.models import Tutor
 from accounts.models import User  # Add the import for User model
+from django.conf import settings
+
 
 # Course Model
 class Course(models.Model):
@@ -37,17 +40,6 @@ class Course(models.Model):
     def __str__(self):
         return self.title
 
-# Student Model
-class Student(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    courses_list = models.ManyToManyField(Course, related_name="students")
-    favorite_tutors = models.ManyToManyField(Tutor, related_name="favorite_students")
-    student_active = models.BooleanField(default=True)
-    student_homework_completed = models.JSONField()
-
-    def __str__(self):
-        return self.user.first_name
-
 # Lesson Model
 class Lesson(models.Model):
     course = models.ForeignKey(Course, related_name='lessons', on_delete=models.CASCADE)
@@ -72,7 +64,8 @@ class Homework(models.Model):
 
 # Review Model (for reviews from students to tutors)
 class Review(models.Model):
-    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    from students.models import Student
+    student = models.ForeignKey('students.Student', on_delete=models.CASCADE)
     tutor = models.ForeignKey(Tutor, on_delete=models.CASCADE)
     review_text = models.TextField()
     rating = models.IntegerField()  # Rating out of 5
@@ -80,4 +73,35 @@ class Review(models.Model):
 
     def __str__(self):
         return f"Review by {self.student.user.first_name} for {self.tutor.user.first_name}"
+
+# NEW: Enrollment gates course access until approved
+class Enrollment(models.Model):
+    STATUS_CHOICES = [
+        ("draft", "Draft"),  # created but no proof yet
+        ("pending_payment", "Pending payment"),
+        ("under_review", "Under review"),
+        ("approved", "Approved"),
+        ("rejected", "Rejected"),
+        ("cancelled", "Cancelled"),
+    ]
+
+    student = models.ForeignKey('students.Student', related_name='enrollments', on_delete=models.CASCADE)
+    course = models.ForeignKey(Course, related_name='enrollments', on_delete=models.CASCADE)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="draft")
+    payment_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    currency = models.CharField(max_length=10, blank=True, default="USD")  # or TOMAN, etc.
+    payment_note = models.TextField(blank=True, default="")
+    payment_proof = models.ImageField(upload_to='payment_proofs/', null=True, blank=True)  # bill/photo
+    submitted_at = models.DateTimeField(auto_now_add=True)
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    reviewed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name='enrollment_reviews'
+    )
+
+    class Meta:
+        unique_together = ('student', 'course')  # one enrollment per course
+
+    def __str__(self):
+        return f"{self.student} → {self.course} [{self.status}]"
+
 

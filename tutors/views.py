@@ -1,77 +1,3 @@
-# # tutors/views.py
-# from rest_framework import viewsets, permissions
-# from .models import Tutor,TutorCourse,TutorCertificate, TutorEducation, TutorExperience
-# from .serializers import (
-#     TutorSerializer,
-#     TutorCourseSerializer,
-#     TutorCertificateSerializer,
-#     TutorEducationSerializer,
-#     TutorExperienceSerializer,
-# )
-#
-#
-#
-# class ReadOnlyOrAuth(permissions.BasePermission):
-#     def has_permission(self, request, view):
-#         # allow anyone to GET/HEAD/OPTIONS; require auth for POST/PUT/PATCH/DELETE
-#         if request.method in permissions.SAFE_METHODS:
-#             return True
-#         return request.user and request.user.is_authenticated
-#
-#
-# class CreateTutorProfileView(APIView):
-#     permission_classes = [permissions.IsAuthenticated]   # must be logged in
-#     parser_classes = [MultiPartParser, FormParser, JSONParser]  # supports files + json
-#
-#     def post(self, request):
-#         data = request.data.copy()
-#
-#         # Accept both JSON arrays and stringified arrays for JSONFields:
-#         for key in ("languages_spoken", "subjects"):
-#             val = data.get(key)
-#             if isinstance(val, str):
-#                 try:
-#                     data[key] = json.loads(val)
-#                 except json.JSONDecodeError:
-#                     # If comma-separated string is sent, split it
-#                     data[key] = [s.strip() for s in val.split(",") if s.strip()]
-#
-#         serializer = TutorSerializer(data=data)
-#         serializer.is_valid(raise_exception=True)
-#
-#         # attach the current user
-#         serializer.save(user=request.user)
-
-#         return Response(serializer.data, status=status.HTTP_201_CREATED)
-#
-#
-#
-# class TutorViewSet(viewsets.ModelViewSet):
-#     queryset = Tutor.objects.select_related("user").prefetch_related(
-#         "certificates", "educations", "experiences","courses"
-#     )
-#     serializer_class = TutorSerializer
-#     permission_classes = [ReadOnlyOrAuth]
-#
-# class TutorCourseViewSet(viewsets.ModelViewSet):
-#     queryset = TutorCourse.objects.all()
-#     serializer_class = TutorCourseSerializer
-#     permission_classes = [ReadOnlyOrAuth]
-#
-# class TutorCertificateViewSet(viewsets.ModelViewSet):
-#     queryset = TutorCertificate.objects.all()
-#     serializer_class = TutorCertificateSerializer
-#     permission_classes = [ReadOnlyOrAuth]
-#
-# class TutorEducationViewSet(viewsets.ModelViewSet):
-#     queryset = TutorEducation.objects.all()
-#     serializer_class = TutorEducationSerializer
-#     permission_classes = [ReadOnlyOrAuth]
-#
-# class TutorExperienceViewSet(viewsets.ModelViewSet):
-#     queryset = TutorExperience.objects.all()
-#     serializer_class = TutorExperienceSerializer
-#     permission_classes = [ReadOnlyOrAuth]
 
 
 import json
@@ -94,20 +20,83 @@ from .serializers import (
     CreateTutorProfileInputSerializer,
 )
 
+from rest_framework.decorators import action
+from courses.models import Enrollment, Course
+from courses.serializers import EnrollmentDetailSerializer, CourseSerializer
+from rest_framework import permissions
+
 class ReadOnlyOrAuth(permissions.BasePermission):
     def has_permission(self, request, view):
         return True if request.method in permissions.SAFE_METHODS else bool(request.user and request.user.is_authenticated)
 
 # ViewSets (browse/edit pieces)
+# class TutorViewSet(viewsets.ModelViewSet):
+#     queryset = Tutor.objects.select_related("user").prefetch_related("certificates", "educations", "experiences", "courses")
+#     serializer_class = TutorSerializer
+#     permission_classes = [ReadOnlyOrAuth]
+
 class TutorViewSet(viewsets.ModelViewSet):
     queryset = Tutor.objects.select_related("user").prefetch_related("certificates", "educations", "experiences", "courses")
     serializer_class = TutorSerializer
     permission_classes = [ReadOnlyOrAuth]
 
+    # Filter tutor based on user id
+    def get_queryset(self):
+        qs = super().get_queryset()
+
+        # Get 'user' or 'tutor' query params for filtering
+        user_id = self.request.query_params.get('user')
+        tutor_id = self.request.query_params.get('tutor')
+
+        # Filter by user.id if provided
+        if user_id:
+            qs = qs.filter(user__id=user_id)
+
+        # Filter by tutor.id if provided
+        if tutor_id:
+            qs = qs.filter(id=tutor_id)
+
+        return qs
+
+    @action(detail=False, methods=['get'], url_path='me/dashboard', permission_classes=[permissions.IsAuthenticated])
+    def my_dashboard(self, request):
+        try:
+            tutor = request.user.tutor
+        except Tutor.DoesNotExist:
+            return Response({"detail": "No tutor profile."}, status=404)
+
+        my_courses = Course.objects.filter(tutor=tutor).prefetch_related('lessons')
+        enrollments = Enrollment.objects.filter(course__in=my_courses).select_related('student__user', 'course')
+
+        data = {
+            "tutor": TutorSerializer(tutor).data,
+            "courses": CourseSerializer(my_courses, many=True).data,
+            "enrollments": EnrollmentDetailSerializer(enrollments, many=True).data,
+        }
+        return Response(data, status=200)
+
 class TutorCourseViewSet(viewsets.ModelViewSet):
     queryset = TutorCourse.objects.all()
+    # queryset = Tutor.objects.select_related("user").prefetch_related(
+    #     "certificates", "educations", "experiences", "courses"
+    # )
     serializer_class = TutorCourseSerializer
     permission_classes = [ReadOnlyOrAuth]
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+
+        # Ensure filtering by User ID (case-sensitive)
+        user_id = self.request.query_params.get("user")
+        tutor_id = self.request.query_params.get("tutor")
+
+        if user_id:
+            qs = qs.filter(tutor__user_id=user_id)
+
+        if tutor_id:
+            qs = qs.filter(tutor_id=tutor_id)
+        return qs
+
 
 class TutorCertificateViewSet(viewsets.ModelViewSet):
     queryset = TutorCertificate.objects.all()
@@ -118,6 +107,20 @@ class TutorEducationViewSet(viewsets.ModelViewSet):
     queryset = TutorEducation.objects.all()
     serializer_class = TutorEducationSerializer
     permission_classes = [ReadOnlyOrAuth]
+
+
+    def get_queryset(self):
+        qs=super().get_queryset()
+        user_id=self.request.query_params.get('user')
+        tutor_id=self.request.query_params.get('tutor')
+
+        if user_id:# filter by accounts.User id
+            qs=qs.filter(tutor__user_id=user_id)
+
+        if tutor_id: # filter by Tutor id
+            qs=qs.filter(tutor_id=tutor_id)
+
+        return qs
 
 class TutorExperienceViewSet(viewsets.ModelViewSet):
     queryset = TutorExperience.objects.all()

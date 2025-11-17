@@ -1,20 +1,51 @@
 # students/serializers.py
 from rest_framework import serializers
 
-from courses.serializers import CourseSerializer
-from tutors.serializers import TutorSerializer
-from .models import Student  # Import your Student model
+
+from .models import Student
+from accounts.models import User
+from courses.models import Course
+from tutors.models import Tutor
 
 class StudentSerializer(serializers.ModelSerializer):
-    courses_list = CourseSerializer(many=True, read_only=True)
-    favourite_tutors = TutorSerializer(many=True, read_only=True)  # Corrected the field name to match model
-
+    courses_list = serializers.PrimaryKeyRelatedField(queryset=Course.objects.all(), many=True, required=False, allow_empty=True)
+    favourite_tutors  = serializers.PrimaryKeyRelatedField(queryset=Tutor.objects.all(), many=True, required=False, allow_empty=True)
     class Meta:
         model = Student
         fields = ['id', 'user', 'courses_list', 'favourite_tutors', 'student_active', 'student_homework_completed']
 
-    def validate(self, data):
-        # Optional: Add custom validation if needed for nullable fields
-        if 'messages_received' in data and not data['messages_received']:
-            data['messages_received'] = None
-        return data
+    def create(self, validated_data):
+        courses= validated_data.pop('courses_list',[])
+        favs= validated_data.pop('favourite_tutors',[])
+        student = Student.objects.create(**validated_data)
+        if courses:
+            student.courses_list.set(courses)
+        if favs:
+            student.favourite_tutors.set(favs)
+        return student
+
+
+
+
+
+class StudentProfileUpdateSerializer(serializers.ModelSerializer):
+    # allow editing Student fields
+    class Meta:
+        model = Student
+        fields = ['favourite_tutors', 'student_active', 'student_homework_completed', 'messages_received',
+                  'messages_sent', 'reviews', 'student_homework_sent']
+        extra_kwargs = {
+            'favourite_tutors': {'required': False},
+            'student_active': {'required': False},
+            'student_homework_completed': {'required': False},
+            'messages_received': {'required': False},
+            'messages_sent': {'required': False},
+            'reviews': {'required': False},
+            'student_homework_sent': {'required': False},
+        }
+
+class UserProfileUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['first_name', 'last_name', 'phone_number', 'bio', 'profile_picture']
+        extra_kwargs = {f: {'required': False, 'allow_null': True} for f in fields}

@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from .models import Course, Student, Lesson, Homework, Review
+from .models import Course, Lesson, Homework, Review ,Enrollment
+from students.models import Student  # Correct import from students app
 from tutors.models import Tutor
 
 # Serializer for Tutor
@@ -29,16 +30,12 @@ class CourseSerializer(serializers.ModelSerializer):
             'image', 'language_flag', 'lessons', 'tutor'
         ]
 
-# Serializer for Student
-class StudentSerializer(serializers.ModelSerializer):
-    courses_list = serializers.PrimaryKeyRelatedField(queryset=Course.objects.all(), many=True)
-    favorite_tutors = serializers.PrimaryKeyRelatedField(queryset=Tutor.objects.all(), many=True)
 
+# Optional: a lightweight Student mini for reviews
+class StudentMiniSerializer(serializers.ModelSerializer):
     class Meta:
         model = Student
-        fields = ['id', 'user', 'courses_list', 'favorite_tutors', 'student_active', 'student_homework_completed']
-
-
+        fields = ['id', 'user']
 
 # Serializer for Homework
 class HomeworkSerializer(serializers.ModelSerializer):
@@ -48,10 +45,34 @@ class HomeworkSerializer(serializers.ModelSerializer):
 
 # Serializer for Review
 class ReviewSerializer(serializers.ModelSerializer):
-    class ReviewSerializer(serializers.ModelSerializer):
-        student = StudentSerializer()
-        tutor = TutorSerializer()
+    student = StudentMiniSerializer(read_only=True)
+    tutor = TutorSerializer(read_only=True)
 
     class Meta:
         model = Review
         fields = ['student', 'tutor', 'review_text', 'rating', 'review_date']
+
+
+
+# NEW: Enrollment serializers
+class EnrollmentCreateSerializer(serializers.ModelSerializer):
+    # client sends payment info + proof; student inferred from request
+    payment_proof = serializers.ImageField(required=True, allow_null=False)
+    payment_amount = serializers.DecimalField(max_digits=10, decimal_places=2, required=True)
+    currency = serializers.CharField(required=True)
+
+    def validate_payment_amount(self, value):
+        if value is None or value <= 0:
+            raise serializers.ValidationError("Payment amount must be greater than 0.")
+        return value
+
+    class Meta:
+        model = Enrollment
+        fields = ['course', 'payment_amount', 'currency', 'payment_note', 'payment_proof']
+
+class EnrollmentDetailSerializer(serializers.ModelSerializer):
+    course = CourseSerializer(read_only=True)
+    class Meta:
+        model = Enrollment
+        fields = ['id', 'course', 'status', 'payment_amount', 'currency', 'payment_note',
+                  'payment_proof', 'submitted_at', 'reviewed_at']
